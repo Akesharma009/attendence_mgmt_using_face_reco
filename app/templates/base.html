@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}FaceTrack SMS{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="logo">FT</div><span>FaceTrack SMS</span></div>
+
+    {% if current_user.is_authenticated and current_user.role == 'admin' %}
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">People</div>
+      <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('admin.student') }}" href="{{ url_for('admin.students_list') }}"><span class="nav-icon">🎓</span> Students</a>
+      <a class="nav-link {{ 'active' if request.endpoint and request.endpoint.startswith('admin.teacher') }}" href="{{ url_for('admin.teachers_list') }}"><span class="nav-icon">🧑‍🏫</span> Teachers</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Academics</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.courses_list' }}" href="{{ url_for('admin.courses_list') }}"><span class="nav-icon">📚</span> Courses</a>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.classes_list' }}" href="{{ url_for('admin.classes_list') }}"><span class="nav-icon">🏫</span> Classes</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Attendance</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.attendance_live' }}" href="{{ url_for('admin.attendance_live') }}"><span class="nav-icon">📷</span> Live Recognition</a>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.attendance_records' }}" href="{{ url_for('admin.attendance_records') }}"><span class="nav-icon">🗂️</span> Records & Reports</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">System</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.cameras' }}" href="{{ url_for('admin.cameras') }}"><span class="nav-icon">🎥</span> Cameras & Unknowns</a>
+      <a class="nav-link {{ 'active' if request.endpoint=='admin.logs' }}" href="{{ url_for('admin.logs') }}"><span class="nav-icon">📝</span> Audit Logs</a>
+    </div>
+    {% elif current_user.is_authenticated and current_user.role == 'teacher' %}
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='teacher.dashboard' }}" href="{{ url_for('teacher.dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a>
+    </div>
+    <div class="nav-group">
+      <div class="nav-label">Attendance</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='teacher.attendance_records' }}" href="{{ url_for('teacher.attendance_records') }}"><span class="nav-icon">🗂️</span> Records & Reports</a>
+    </div>
+    {% elif current_user.is_authenticated and current_user.role == 'student' %}
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <a class="nav-link {{ 'active' if request.endpoint=='student.dashboard' }}" href="{{ url_for('student.dashboard') }}"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-link {{ 'active' if request.endpoint=='student.attendance_history' }}" href="{{ url_for('student.attendance_history') }}"><span class="nav-icon">🗂️</span> My Attendance</a>
+      <a class="nav-link {{ 'active' if request.endpoint=='student.profile' }}" href="{{ url_for('student.profile') }}"><span class="nav-icon">👤</span> Profile</a>
+    </div>
+    {% endif %}
+
+    <div class="sidebar-footer">
+      {% if current_user.is_authenticated %}
+      <a class="nav-link" href="{{ url_for('auth.logout') }}"><span class="nav-icon">🚪</span> Logout</a>
+      {% endif %}
+      <div style="opacity:.6; margin-top:8px;">v1.0 · Face Recognition SMS</div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+      {% if current_user.is_authenticated %}
+      <div class="user-chip">
+        <div class="avatar">{{ current_user.full_name[:1] }}</div>
+        <div>
+          <div style="font-weight:700;">{{ current_user.full_name }}</div>
+          <div style="color:var(--text-muted); font-size:12px;">{{ current_user.role|capitalize }}</div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    <div class="content">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,39 @@
+{% extends "auth/_register_base.html" %}
+{% set role_name = "Student" %}
+{% set role_icon = "🎓" %}
+{% set role_color = "#d1fae5" %}
+{% set role_text = "#065f46" %}
+{% set register_action = url_for('auth.register_student') %}
+{% set login_url = url_for('auth.login_student') %}
+
+{% block extra_fields %}
+<div class="form-row">
+  <div class="form-group">
+    <label>Student ID / Code</label>
+    <input type="text" name="student_code" required value="{{ form.student_code or '' }}" placeholder="e.g. S-2026-001">
+  </div>
+  <div class="form-group">
+    <label>Date of Birth</label>
+    <input type="date" name="dob" value="{{ form.dob or '' }}">
+  </div>
+</div>
+<div class="form-row">
+  <div class="form-group">
+    <label>Gender</label>
+    <select name="gender">
+      <option value="">--</option>
+      <option value="Male" {{ 'selected' if form.gender == 'Male' }}>Male</option>
+      <option value="Female" {{ 'selected' if form.gender == 'Female' }}>Female</option>
+      <option value="Other" {{ 'selected' if form.gender == 'Other' }}>Other</option>
+    </select>
+  </div>
+  <div class="form-group">
+    <label>Phone</label>
+    <input type="text" name="phone" value="{{ form.phone or '' }}" placeholder="e.g. 98XXXXXXXX">
+  </div>
+</div>
+<div class="form-group">
+  <label>Address</label>
+  <textarea name="address" rows="2" placeholder="e.g. Kathmandu, Nepal">{{ form.address or '' }}</textarea>
+</div>
+{% endblock %}

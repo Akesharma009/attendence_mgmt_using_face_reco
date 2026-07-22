@@ -1,0 +1,8 @@
+{% extends "auth/_login_base.html" %}
+{% set role_name = "Student" %}
+{% set role_icon = "🎓" %}
+{% set role_color = "#d1fae5" %}
+{% set role_text = "#065f46" %}
+{% set login_action = url_for('auth.login_student') %}
+{% set register_url = url_for('auth.register_student') %}
+{% set other_portal_text = "Not a student? Go back to portal selection" %}

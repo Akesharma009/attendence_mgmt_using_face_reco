@@ -1,0 +1,8 @@
+{% extends "auth/_login_base.html" %}
+{% set role_name = "Administrator" %}
+{% set role_icon = "🛡️" %}
+{% set role_color = "#ede9fe" %}
+{% set role_text = "#5b21b6" %}
+{% set login_action = url_for('auth.login_admin') %}
+{% set register_url = url_for('auth.register_admin') %}
+{% set other_portal_text = "Not an admin? Go back to portal selection" %}

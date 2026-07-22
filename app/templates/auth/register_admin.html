@@ -1,0 +1,7 @@
+{% extends "auth/_register_base.html" %}
+{% set role_name = "Administrator" %}
+{% set role_icon = "🛡️" %}
+{% set role_color = "#ede9fe" %}
+{% set role_text = "#5b21b6" %}
+{% set register_action = url_for('auth.register_admin') %}
+{% set login_url = url_for('auth.login_admin') %}

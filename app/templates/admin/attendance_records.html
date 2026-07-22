@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block page_title %}Attendance Records{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header"><h3>Filters</h3></div>
+  <form method="GET" class="form-row" style="grid-template-columns: repeat(5, 1fr); align-items:end;">
+    <div class="form-group"><label>Start Date</label><input type="date" name="start_date" value="{{ filters.start_date or '' }}"></div>
+    <div class="form-group"><label>End Date</label><input type="date" name="end_date" value="{{ filters.end_date or '' }}"></div>
+    <div class="form-group"><label>Class</label>
+      <select name="class_id">
+        <option value="">All classes</option>
+        {% for c in classes %}<option value="{{ c.id }}" {{ 'selected' if filters.class_id==c.id }}>{{ c.course.code }} - {{ c.class_name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="form-group"><label>Status</label>
+      <select name="status">
+        <option value="">All</option>
+        <option value="present" {{ 'selected' if filters.status=='present' }}>Present</option>
+        <option value="late" {{ 'selected' if filters.status=='late' }}>Late</option>
+      </select>
+    </div>
+    <div class="form-group"><button class="btn btn-primary" type="submit" style="width:100%;">Apply Filters</button></div>
+  </form>
+  <div style="display:flex; gap:8px;">
+    <a class="btn btn-outline btn-sm" href="{{ url_for('admin.attendance_export', fmt='csv', **filters) }}">⬇ CSV</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('admin.attendance_export', fmt='excel', **filters) }}">⬇ Excel</a>
+    <a class="btn btn-outline btn-sm" href="{{ url_for('admin.attendance_export', fmt='pdf', **filters) }}">⬇ PDF</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><h3>Results ({{ rows|length }})</h3></div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Date</th><th>Time In</th><th>Time Out</th><th>Hrs in Class</th><th>Student ID</th><th>Name</th><th>Course</th><th>Class</th><th>Status</th><th>Confidence</th></tr></thead>
+    <tbody>
+      {% for att, student, cls, course in rows %}
+      <tr>
+        <td>{{ att.date }}</td>
+        <td>{{ att.time_in.strftime('%H:%M:%S') if att.time_in }}</td>
+        <td>{{ att.time_out.strftime('%H:%M:%S') if att.time_out }}</td>
+        <td>{{ att.duration_display }}</td>
+        <td style="font-weight:700;">{{ student.student_code }}</td>
+        <td>{{ student.user.full_name }}</td>
+        <td>{{ course.name }}</td>
+        <td>{{ cls.class_name }}</td>
+        <td><span class="badge badge-{{ att.status }}">{{ att.status }}</span></td>
+        <td>{{ att.confidence or '—' }}{{ '%' if att.confidence }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="10"><div class="empty-state"><div class="icon">🗂️</div>No records match your filters.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}

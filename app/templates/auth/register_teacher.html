@@ -1,0 +1,24 @@
+{% extends "auth/_register_base.html" %}
+{% set role_name = "Teacher" %}
+{% set role_icon = "🧑‍🏫" %}
+{% set role_color = "#dbeafe" %}
+{% set role_text = "#1e40af" %}
+{% set register_action = url_for('auth.register_teacher') %}
+{% set login_url = url_for('auth.login_teacher') %}
+
+{% block extra_fields %}
+<div class="form-row">
+  <div class="form-group">
+    <label>Teacher ID / Code</label>
+    <input type="text" name="teacher_code" required value="{{ form.teacher_code or '' }}" placeholder="e.g. T-1001">
+  </div>
+  <div class="form-group">
+    <label>Department</label>
+    <input type="text" name="department" value="{{ form.department or '' }}" placeholder="e.g. Computer Science">
+  </div>
+</div>
+<div class="form-group">
+  <label>Phone</label>
+  <input type="text" name="phone" value="{{ form.phone or '' }}" placeholder="e.g. 98XXXXXXXX">
+</div>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block page_title %}{{ 'Edit Student' if student else 'Register Student' }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:760px; margin:0 auto;">
+  <div class="card-header"><h3>{{ 'Edit Student' if student else 'Step 1 — Student Details' }}</h3></div>
+  <form method="POST">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" name="full_name" required value="{{ student.user.full_name if student else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Student ID / Code</label>
+        <input type="text" name="student_code" required {{ 'readonly' if student }} value="{{ student.student_code if student else '' }}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" {{ 'readonly' if student else 'required' }} value="{{ student.user.username if student else '' }}">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required value="{{ student.user.email if student else '' }}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Password {{ '(leave blank to keep unchanged)' if student else '' }}</label>
+        <input type="password" name="password" {{ '' if student else 'required' }}>
+      </div>
+      <div class="form-group">
+        <label>Date of Birth</label>
+        <input type="date" name="dob" value="{{ student.dob.isoformat() if student and student.dob else '' }}">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Gender</label>
+        <select name="gender">
+          <option value="">--</option>
+          <option {{ 'selected' if student and student.gender=='Male' }}>Male</option>
+          <option {{ 'selected' if student and student.gender=='Female' }}>Female</option>
+          <option {{ 'selected' if student and student.gender=='Other' }}>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Phone</label>
+        <input type="text" name="phone" value="{{ student.phone if student else '' }}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Address</label>
+      <textarea name="address" rows="2">{{ student.address if student else '' }}</textarea>
+    </div>
+    <div class="form-group">
+      <label>Enroll in Classes</label>
+      <div class="checkbox-list">
+        {% for c in classes %}
+        <label><input type="checkbox" name="class_ids" value="{{ c.id }}" {{ 'checked' if enrolled_ids and c.id in enrolled_ids }}> {{ c.course.code }} — {{ c.class_name }}</label>
+        {% else %}
+        <span style="color:var(--text-muted); font-size:13px;">No classes created yet.</span>
+        {% endfor %}
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ 'Save Changes' if student else 'Save & Continue to Face Capture →' }}</button>
+    <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">Cancel</a>
+  </form>
+</div>
+{% endblock %}

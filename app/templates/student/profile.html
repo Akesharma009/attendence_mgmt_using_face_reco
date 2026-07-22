@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block page_title %}My Profile{% endblock %}
+{% block content %}
+<div class="card" style="max-width:520px;">
+  <div class="card-header"><h3>Profile Details</h3></div>
+  <table>
+    <tr><td>Name</td><td style="font-weight:700;">{{ student.user.full_name }}</td></tr>
+    <tr><td>Student ID</td><td style="font-weight:700;">{{ student.student_code }}</td></tr>
+    <tr><td>Email</td><td>{{ student.user.email }}</td></tr>
+    <tr><td>Phone</td><td>{{ student.phone or '—' }}</td></tr>
+    <tr><td>Gender</td><td>{{ student.gender or '—' }}</td></tr>
+    <tr><td>Date of Birth</td><td>{{ student.dob or '—' }}</td></tr>
+    <tr><td>Address</td><td>{{ student.address or '—' }}</td></tr>
+    <tr><td>Face Registered</td><td>{% if student.is_face_registered %}<span class="badge badge-present">Yes</span>{% else %}<span class="badge badge-absent">No — see admin</span>{% endif %}</td></tr>
+  </table>
+</div>
+{% endblock %}

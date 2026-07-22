@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ role_name }} Sign Up — FaceTrack SMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card" style="max-width:480px;">
+    <span class="login-role-badge" style="background:{{ role_color }}; color:{{ role_text }};">{{ role_icon }} {{ role_name }} Portal</span>
+    <h2>Create your account</h2>
+    <p class="sub">Register as a {{ role_name.lower() }}. An account must not already exist to sign up.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ register_action }}">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="full_name" required autofocus value="{{ form.full_name or '' }}" placeholder="e.g. Jane Doe">
+        </div>
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" name="username" required value="{{ form.username or '' }}" placeholder="e.g. jane.doe">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required value="{{ form.email or '' }}" placeholder="jane.doe@example.com">
+      </div>
+
+      {% block extra_fields %}{% endblock %}
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" name="password" required placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" name="confirm_password" required placeholder="••••••••">
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">Create Account</button>
+    </form>
+
+    <div style="text-align:center; margin-top:18px;">
+      <a href="{{ login_url }}" style="font-size:13px; color:var(--text-muted);">Already have an account? <strong>Sign in</strong></a>
+    </div>
+    <div style="text-align:center; margin-top:8px;">
+      <a href="{{ url_for('auth.choose_login') }}" style="font-size:13px; color:var(--text-muted);">← Back to portal selection</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

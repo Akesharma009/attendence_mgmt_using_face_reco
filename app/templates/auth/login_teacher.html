@@ -1,0 +1,8 @@
+{% extends "auth/_login_base.html" %}
+{% set role_name = "Teacher" %}
+{% set role_icon = "🧑‍🏫" %}
+{% set role_color = "#dbeafe" %}
+{% set role_text = "#1e40af" %}
+{% set login_action = url_for('auth.login_teacher') %}
+{% set register_url = url_for('auth.register_teacher') %}
+{% set other_portal_text = "Not a teacher? Go back to portal selection" %}

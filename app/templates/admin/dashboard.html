@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block page_title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<div class="grid grid-4">
+  <div class="stat-card"><div class="icon icon-indigo">🎓</div><div class="label">Total Students</div><div class="value">{{ stats.total_students }}</div></div>
+  <div class="stat-card"><div class="icon icon-cyan">🧑‍🏫</div><div class="label">Teachers</div><div class="value">{{ stats.total_teachers }}</div></div>
+  <div class="stat-card"><div class="icon icon-green">✅</div><div class="label">Present Today</div><div class="value">{{ stats.today_present }}</div></div>
+  <div class="stat-card"><div class="icon icon-amber">❓</div><div class="label">Unknown Faces Today</div><div class="value">{{ stats.unknown_today }}</div></div>
+</div>
+
+<div class="grid grid-2" style="margin-top:18px;">
+  <div class="card">
+    <div class="card-header"><h3>Attendance Trend (14 days)</h3></div>
+    <canvas id="trendChart" height="140"></canvas>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>System Snapshot</h3></div>
+    <table>
+      <tr><td>Courses</td><td style="text-align:right; font-weight:700;">{{ stats.total_courses }}</td></tr>
+      <tr><td>Classes / Sections</td><td style="text-align:right; font-weight:700;">{{ stats.total_classes }}</td></tr>
+      <tr><td>Students with Face Registered</td><td style="text-align:right; font-weight:700;">{{ stats.registered_faces }} / {{ stats.total_students }}</td></tr>
+      <tr><td>Cameras Reporting</td><td style="text-align:right; font-weight:700;">{{ cameras|length }}</td></tr>
+    </table>
+    <a href="{{ url_for('admin.attendance_live') }}" class="btn btn-primary" style="margin-top:16px; width:100%; justify-content:center;">📷 Start Live Recognition</a>
+  </div>
+</div>
+
+<div class="card" style="margin-top:18px;">
+  <div class="card-header"><h3>Recent Activity</h3><a href="{{ url_for('admin.logs') }}" class="btn btn-ghost btn-sm">View all logs →</a></div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+    <tbody>
+      {% for log in recent_logs %}
+      <tr>
+        <td>{{ log.timestamp.strftime('%b %d, %H:%M') }}</td>
+        <td>{{ log.user.full_name if log.user else 'System' }}</td>
+        <td><span class="badge badge-admin">{{ log.action }}</span></td>
+        <td style="color:var(--text-muted);">{{ log.details }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="4" class="empty-state">No activity yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+const trend = {{ trend|tojson }};
+new Chart(document.getElementById('trendChart'), {
+  type: 'line',
+  data: {
+    labels: trend.map(d => d.date.slice(5)),
+    datasets: [
+      { label: 'Present', data: trend.map(d => d.present), borderColor: '#4f46e5', backgroundColor: '#4f46e522', tension: .35, fill: true },
+      { label: 'Late', data: trend.map(d => d.late), borderColor: '#d97706', backgroundColor: '#d9770622', tension: .35, fill: true },
+    ]
+  },
+  options: { plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ role_name }} Login — FaceTrack SMS</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+<div class="login-wrap">
+  <div class="login-card">
+    <span class="login-role-badge" style="background:{{ role_color }}; color:{{ role_text }};">{{ role_icon }} {{ role_name }} Portal</span>
+    <h2>Welcome back</h2>
+    <p class="sub">Sign in to access the {{ role_name.lower() }} dashboard.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash flash-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    {% if error %}<div class="flash flash-danger">{{ error }}</div>{% endif %}
+
+    <form method="POST" action="{{ login_action }}">
+      <div class="form-group">
+        <label>Username or Email</label>
+        <input type="text" name="username" required autofocus placeholder="e.g. jane.doe">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" required placeholder="••••••••">
+      </div>
+      <div class="form-group" style="display:flex; align-items:center; gap:8px;">
+        <input type="checkbox" name="remember" id="remember" style="width:auto;">
+        <label for="remember" style="margin:0; font-weight:500;">Remember me</label>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">Sign In</button>
+    </form>
+
+    <div style="text-align:center; margin-top:20px;">
+      <a href="{{ register_url }}" style="font-size:13px; color:var(--text-muted);">Don't have an account? <strong>Create one</strong></a>
+    </div>
+    <div style="text-align:center; margin-top:10px;">
+      <a href="{{ url_for('auth.choose_login') }}" style="font-size:13px; color:var(--text-muted);">← {{ other_portal_text }}</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

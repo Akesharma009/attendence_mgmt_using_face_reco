@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block page_title %}Face Registration{% endblock %}
+{% block content %}
+<div class="card" style="max-width:660px; margin:0 auto;">
+  <div class="card-header">
+    <h3>Capture Face — {{ student.user.full_name }} ({{ student.student_code }})</h3>
+    {% if student.is_face_registered %}<span class="badge badge-present">Already Registered</span>{% endif %}
+  </div>
+  <p style="color:var(--text-muted); font-size:13.5px;">
+    Position the student's face inside the guide circle. Capture 5 shots from slightly different angles
+    (front, left, right, up, down) for a robust embedding. Good lighting improves accuracy.
+  </p>
+
+  <div class="webcam-box">
+    <video id="video" autoplay playsinline></video>
+    <div class="face-guide"></div>
+  </div>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <div style="text-align:center; margin-top:16px;">
+    <button id="captureBtn" class="btn btn-primary">📸 Capture Frame (<span id="count">0</span>/{{ 5 }})</button>
+    <button id="uploadBtn" class="btn btn-outline" disabled>⬆ Save & Encode Faces</button>
+    {% if student.is_face_registered %}
+    <button id="resetBtn" class="btn btn-danger" type="button">♻ Reset Face Data</button>
+    {% endif %}
+  </div>
+
+  <div class="capture-thumbs" id="thumbs"></div>
+  <div id="msgBox" style="margin-top:14px;"></div>
+
+  <div style="margin-top:20px; text-align:right;">
+    <a href="{{ url_for('admin.students_list') }}" class="btn btn-ghost">Done — Back to Students</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const video = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const captureBtn = document.getElementById('captureBtn');
+const uploadBtn = document.getElementById('uploadBtn');
+const resetBtn = document.getElementById('resetBtn');
+const thumbs = document.getElementById('thumbs');
+const countEl = document.getElementById('count');
+const msgBox = document.getElementById('msgBox');
+const TARGET = 5;
+let frames = [];
+
+navigator.mediaDevices.getUserMedia({ video: { width: 480, height: 480 } })
+  .then(stream => { video.srcObject = stream;
+    fetch("{{ url_for('api.camera_ping') }}", {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'online', camera_name:'admin-registration-cam'})});
+  })
+  .catch(err => { msgBox.innerHTML = `<div class="flash flash-danger">Camera access denied: ${err.message}</div>`; });
+
+captureBtn.addEventListener('click', () => {
+  if (frames.length >= TARGET) return;
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+  frames.push(dataUrl);
+  countEl.textContent = frames.length;
+
+  const img = document.createElement('img');
+  img.src = dataUrl;
+  thumbs.appendChild(img);
+
+  if (frames.length >= TARGET) {
+    captureBtn.disabled = true;
+    uploadBtn.disabled = false;
+  }
+});
+
+uploadBtn.addEventListener('click', async () => {
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Encoding faces...';
+  try {
+    const res = await fetch("{{ url_for('api.register_face', student_id=student.id) }}", {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ frames })
+    });
+    const data = await res.json();
+    msgBox.innerHTML = `<div class="flash flash-${data.ok ? 'success' : 'danger'}">${data.message}</div>`;
+    if (data.ok) {
+      frames = []; countEl.textContent = 0; thumbs.innerHTML = '';
+      captureBtn.disabled = false;
+    }
+  } catch (e) {
+    msgBox.innerHTML = `<div class="flash flash-danger">Upload failed: ${e.message}</div>`;
+  }
+  uploadBtn.disabled = false;
+  uploadBtn.textContent = '⬆ Save & Encode Faces';
+});
+
+if (resetBtn) {
+  resetBtn.addEventListener('click', async () => {
+    if (!confirm('Clear all stored face data for this student?')) return;
+    const res = await fetch("{{ url_for('api.reset_face', student_id=student.id) }}", {method:'POST'});
+    const data = await res.json();
+    msgBox.innerHTML = `<div class="flash flash-info">${data.message}</div>`;
+  });
+}
+</script>
+{% endblock %}

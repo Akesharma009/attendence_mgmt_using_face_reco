@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% block page_title %}Take Attendance — {{ cls.class_name }}{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-header"><h3>{{ cls.course.code }} — {{ cls.class_name }}</h3>
+      <span id="statusPill" class="status-pill" style="background:#f3f4f6;"><span class="dot dot-amber"></span> Idle</span>
+    </div>
+    <div class="recognition-overlay-wrap">
+      <video id="video" autoplay playsinline style="width:100%; border-radius:14px;"></video>
+      <canvas id="overlay" class="overlay"></canvas>
+    </div>
+    <canvas id="grab" style="display:none;"></canvas>
+    <div style="text-align:center; margin-top:14px;">
+      <button id="startBtn" class="btn btn-primary">▶ Start Recognition</button>
+      <button id="stopBtn" class="btn btn-danger" disabled>⏸ Stop</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3>Recognition Log</h3></div>
+    <div id="log" style="max-height:520px; overflow-y:auto;">
+      <div class="empty-state"><div class="icon">🕒</div>Recognition results will appear here.</div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+const CLASS_ID = {{ cls.id }};
+const video = document.getElementById('video');
+const grab = document.getElementById('grab');
+const overlay = document.getElementById('overlay');
+const startBtn = document.getElementById('startBtn');
+const stopBtn = document.getElementById('stopBtn');
+const statusPill = document.getElementById('statusPill');
+const log = document.getElementById('log');
+let stream = null, timer = null;
+
+async function initCamera() {
+  stream = await navigator.mediaDevices.getUserMedia({ video: { width: 640, height: 480 } });
+  video.srcObject = stream;
+}
+initCamera().catch(e => { statusPill.innerHTML = `<span class="dot dot-red"></span> Camera error`; });
+
+function addLogEntry(person) {
+  if (log.querySelector('.empty-state')) log.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'card'; div.style.padding = '12px 14px'; div.style.marginBottom = '8px';
+  const time = new Date().toLocaleTimeString();
+  if (!person.matched) {
+    div.innerHTML = `<div style="display:flex; justify-content:space-between;"><span>❓ Unknown face detected</span><span style="color:var(--text-muted); font-size:12px;">${time}</span></div>`;
+  } else if (!person.enrolled) {
+    div.innerHTML = `<div style="display:flex; justify-content:space-between;"><span>⚠️ ${person.name} — not enrolled</span><span style="color:var(--text-muted); font-size:12px;">${time}</span></div>`;
+  } else {
+    const badge = person.status === 'late' ? 'badge-late' : 'badge-present';
+    div.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;">
+      <span><strong>${person.name}</strong> (${person.student_code})</span><span class="badge ${badge}">${person.status}</span></div>
+      <div style="font-size:12px; color:var(--text-muted); margin-top:4px;">${person.message} · confidence ${person.confidence}% · ${time}</div>`;
+  }
+  log.prepend(div);
+}
+
+function drawBoxes(people) {
+  overlay.width = video.videoWidth; overlay.height = video.videoHeight;
+  const ctx = overlay.getContext('2d'); ctx.clearRect(0, 0, overlay.width, overlay.height);
+  people.forEach(p => {
+    if (!p.box) return;
+    const [top, right, bottom, left] = p.box;
+    ctx.strokeStyle = p.matched ? '#16a34a' : '#dc2626'; ctx.lineWidth = 3;
+    ctx.strokeRect(left, top, right - left, bottom - top);
+    ctx.fillStyle = p.matched ? '#16a34a' : '#dc2626'; ctx.font = '16px Inter, sans-serif';
+    ctx.fillText(p.matched ? (p.name || 'Match') : 'Unknown', left, top - 8);
+  });
+}
+
+async function captureAndRecognize() {
+  grab.width = video.videoWidth; grab.height = video.videoHeight;
+  grab.getContext('2d').drawImage(video, 0, 0);
+  const frame = grab.toDataURL('image/jpeg', 0.8);
+  try {
+    const res = await fetch("{{ url_for('api.recognize_and_mark') }}", {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ frame, class_id: CLASS_ID })
+    });
+    const data = await res.json();
+    if (data.ok) { drawBoxes(data.people); data.people.forEach(p => { if (p.created !== false) addLogEntry(p); }); }
+  } catch (e) { console.error(e); }
+}
+
+startBtn.addEventListener('click', () => {
+  statusPill.innerHTML = `<span class="dot dot-green"></span> Recognizing...`;
+  startBtn.disabled = true; stopBtn.disabled = false;
+  timer = setInterval(captureAndRecognize, 2200);
+});
+stopBtn.addEventListener('click', () => {
+  clearInterval(timer);
+  statusPill.innerHTML = `<span class="dot dot-amber"></span> Idle`;
+  startBtn.disabled = false; stopBtn.disabled = true;
+  overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+});
+</script>
+{% endblock %}

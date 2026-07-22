@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block page_title %}Audit Logs{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-header"><h3>System Activity Log</h3></div>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th><th>IP</th></tr></thead>
+    <tbody>
+      {% for log in entries.items %}
+      <tr>
+        <td>{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+        <td>{{ log.user.full_name if log.user else 'System' }}</td>
+        <td><span class="badge badge-admin">{{ log.action }}</span></td>
+        <td style="color:var(--text-muted);">{{ log.details }}</td>
+        <td>{{ log.ip_address }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5"><div class="empty-state">No logs yet.</div></td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  <div style="margin-top:14px; display:flex; gap:8px;">
+    {% if entries.has_prev %}<a class="btn btn-outline btn-sm" href="?page={{ entries.prev_num }}">← Prev</a>{% endif %}
+    {% if entries.has_next %}<a class="btn btn-outline btn-sm" href="?page={{ entries.next_num }}">Next →</a>{% endif %}
+  </div>
+</div>
+{% endblock %}
