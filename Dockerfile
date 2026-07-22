@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libopenblas-dev \
     liblapack-dev \
     libx11-dev \
-    libgtk-3-dev \
+    libgtk-3-dev \ 
     libboost-python-dev \
     libgl1 \
     && rm -rf /var/lib/apt/lists/*
