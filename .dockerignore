@@ -1,0 +1,12 @@
+venv/
+.venv/
+__pycache__/
+*.pyc
+instance/*.db
+app/static/uploads/students/*
+app/static/uploads/unknown/*
+!app/static/uploads/students/.gitkeep
+!app/static/uploads/unknown/.gitkeep
+.env
+.git/
+.DS_Store
