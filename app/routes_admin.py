@@ -50,44 +50,7 @@ def students_list():
         query = query.filter(db.or_(Student.student_code.ilike(like), User.full_name.ilike(like)))
     students = query.order_by(Student.student_code).all()
     return render_template("admin/students_list.html", students=students, search=search)
-
-
-@admin_bp.route("/students/new", methods=["GET", "POST"])
-def student_new():
-    courses = Course.query.all()
-    classes = ClassSession.query.all()
-    if request.method == "POST":
-        f = request.form
-        if User.query.filter((User.username == f["username"]) | (User.email == f["email"])).first():
-            flash("Username or email already exists.", "danger")
-            return render_template("admin/student_form.html", student=None, courses=courses, classes=classes, form=f)
-
-        user = User(username=f["username"], email=f["email"], full_name=f["full_name"], role="student")
-        user.set_password(f["password"])
-        db.session.add(user)
-        db.session.flush()
-
-        student = Student(
-            user_id=user.id,
-            student_code=f["student_code"],
-            gender=f.get("gender"),
-            phone=f.get("phone"),
-            address=f.get("address"),
-            dob=datetime.strptime(f["dob"], "%Y-%m-%d").date() if f.get("dob") else None,
-        )
-        db.session.add(student)
-        db.session.flush()
-
-        for class_id in request.form.getlist("class_ids"):
-            db.session.add(Enrollment(student_id=student.id, class_id=int(class_id)))
-
-        db.session.commit()
-        log_action("STUDENT_CREATE", f"student_code={student.student_code}")
-        flash("Student registered. Now capture face images.", "success")
-        return redirect(url_for("admin.student_capture_face", student_id=student.id))
-
-    return render_template("admin/student_form.html", student=None, courses=courses, classes=classes, form={})
-
+  
 
 @admin_bp.route("/students/<int:student_id>/edit", methods=["GET", "POST"])
 def student_edit(student_id):
@@ -143,29 +106,6 @@ def student_capture_face(student_id):
 def teachers_list():
     teachers = Teacher.query.join(User).order_by(Teacher.teacher_code).all()
     return render_template("admin/teachers_list.html", teachers=teachers)
-
-
-@admin_bp.route("/teachers/new", methods=["GET", "POST"])
-def teacher_new():
-    if request.method == "POST":
-        f = request.form
-        if User.query.filter((User.username == f["username"]) | (User.email == f["email"])).first():
-            flash("Username or email already exists.", "danger")
-            return render_template("admin/teacher_form.html", teacher=None)
-
-        user = User(username=f["username"], email=f["email"], full_name=f["full_name"], role="teacher")
-        user.set_password(f["password"])
-        db.session.add(user)
-        db.session.flush()
-
-        teacher = Teacher(user_id=user.id, teacher_code=f["teacher_code"], department=f.get("department"), phone=f.get("phone"))
-        db.session.add(teacher)
-        db.session.commit()
-        log_action("TEACHER_CREATE", f"teacher_code={teacher.teacher_code}")
-        flash("Teacher created.", "success")
-        return redirect(url_for("admin.teachers_list"))
-
-    return render_template("admin/teacher_form.html", teacher=None)
 
 
 @admin_bp.route("/teachers/<int:teacher_id>/delete", methods=["POST"])
