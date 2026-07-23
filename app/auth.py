@@ -121,9 +121,12 @@ def _handle_register(role, template):
             flash("Please fill in all required fields.", "danger")
             return render_template(template, form=f)
 
-        if password != confirm_password:
-            flash("Passwords do not match.", "danger")
-            return render_template(template, form=f)
+        if role == "admin":
+            admin_code = f.get("admin_code", "").strip()
+            expected_code = os.environ.get("ADMIN_SIGNUP_CODE", "")
+            if not expected_code or admin_code != expected_code:
+                flash("Invalid admin invite code. Contact the system owner to get one.", "danger")
+                return render_template(template, form=f)
 
         # Only allow creating the account if one doesn't already exist.
         existing = User.query.filter(
