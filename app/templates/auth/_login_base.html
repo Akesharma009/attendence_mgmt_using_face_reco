@@ -38,9 +38,12 @@
       <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center; padding:12px;">Sign In</button>
     </form>
 
+    {% if register_url %}
     <div style="text-align:center; margin-top:20px;">
       <a href="{{ register_url }}" style="font-size:13px; color:var(--text-muted);">Don't have an account? <strong>Create one</strong></a>
     </div>
+    {% endif %}
+    
     <div style="text-align:center; margin-top:10px;">
       <a href="{{ url_for('auth.choose_login') }}" style="font-size:13px; color:var(--text-muted);">← {{ other_portal_text }}</a>
     </div>
