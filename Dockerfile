@@ -28,4 +28,4 @@ RUN mkdir -p instance app/static/uploads/students app/static/uploads/unknown
 ENV FLASK_DEBUG=0
 EXPOSE 8000
 
-CMD gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 2 --timeout 120 run:app
+CMD gunicorn --bind 0.0.0.0:${PORT:-8000} --workers 1 --timeout 120 run:app
